@@ -1,0 +1,3 @@
+node_modules/
+burnout_data.db
+.DS_Store

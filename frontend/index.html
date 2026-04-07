@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burnout AI | Weekly Resonance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+        .bar-glow { filter: drop-shadow(0 0 8px currentColor); }
+        .xai-bar { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Animation for weekly bars rising */
+        @keyframes growUp { from { height: 0; } to { height: var(--target-height); } }
+        .animate-grow { animation: growUp 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        
+        <div class="space-y-6">
+            <header>
+                <h1 class="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent italic tracking-tighter">BURNOUT AI</h1>
+                <p class="text-slate-500 text-[10px] font-black tracking-[0.3em] uppercase mt-2">Neural Engine v2.6</p>
+            </header>
+
+            <div class="glass rounded-[2.5rem] p-8 shadow-2xl">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase ml-2">Work Hours</label>
+                        <input type="number" id="workHours" value="8" class="w-full bg-slate-900/50 border border-slate-700/50 p-4 rounded-2xl focus:border-blue-500 outline-none text-white font-bold">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase ml-2">Tasks</label>
+                        <input type="number" id="taskCount" value="5" class="w-full bg-slate-900/50 border border-slate-700/50 p-4 rounded-2xl focus:border-blue-500 outline-none text-white font-bold">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase ml-2">Focus H</label>
+                        <input type="number" id="focusHours" value="4" class="w-full bg-slate-900/50 border border-slate-700/50 p-4 rounded-2xl focus:border-blue-500 outline-none text-white font-bold">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase ml-2">Breaks</label>
+                        <input type="number" id="breakFrequency" value="3" class="w-full bg-slate-900/50 border border-slate-700/50 p-4 rounded-2xl focus:border-blue-500 outline-none text-white font-bold">
+                    </div>
+                </div>
+                <button onclick="runDiagnostic()" class="w-full bg-white text-slate-950 font-black py-5 rounded-2xl hover:bg-blue-500 hover:text-white transition-all active:scale-95 text-xs tracking-widest uppercase shadow-xl">
+                    Execute Analysis
+                </button>
+            </div>
+
+            <div class="glass rounded-[2.5rem] p-8 border-white/5">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Weekly Resonance</h4>
+                        <p class="text-xs font-bold text-slate-300 mt-1">7-Day Stability Trend</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                    </div>
+                </div>
+                
+                <div id="weeklyPulse" class="flex items-end justify-between h-32 gap-3 px-2">
+                    </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div id="resultArea" class="hidden glass rounded-[2.5rem] p-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div class="flex items-center justify-between mb-8">
+                    <span id="scoreEmoji" class="text-5xl"></span>
+                    <div class="text-right">
+                        <h2 id="scoreText" class="text-5xl font-black tracking-tighter">0%</h2>
+                        <div id="statusBadge" class="px-3 py-1 rounded-full text-[10px] font-black uppercase border mt-1"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mb-8">
+                    <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest text-left">Neural Attribution</h4>
+                    <div class="space-y-3" id="attributionBars">
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400"><span>Volume</span><span id="valWork">0%</span></div>
+                            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div id="barWork" class="xai-bar h-full bg-blue-500" style="width: 0%"></div></div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400"><span>Switching</span><span id="valSwitch">0%</span></div>
+                            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div id="barSwitch" class="xai-bar h-full bg-purple-500" style="width: 0%"></div></div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-400"><span>Recovery Gap</span><span id="valRecov">0%</span></div>
+                            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div id="barRecov" class="xai-bar h-full bg-orange-500" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 rounded-2xl p-4 text-left border border-white/5">
+                    <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1 italic">Diagnostic Insight</p>
+                    <p id="insightText" class="text-xs text-slate-300 font-medium leading-relaxed"></p>
+                </div>
+            </div>
+
+            <div id="historyList" class="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://127.0.0.1:5000';
+
+        async function runDiagnostic() {
+            const payload = {
+                workHours: document.getElementById('workHours').value,
+                taskCount: document.getElementById('taskCount').value,
+                focusHours: document.getElementById('focusHours').value,
+                breakFrequency: document.getElementById('breakFrequency').value
+            };
+
+            const res = await fetch(`${API}/analyze`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            // Update Primary Score
+            document.getElementById('resultArea').classList.remove('hidden');
+            document.getElementById('scoreEmoji').innerText = data.face || "🤔";
+            document.getElementById('scoreText').innerText = `${data.score}%`;
+            document.getElementById('scoreText').style.color = data.color;
+            document.getElementById('statusBadge').innerText = data.level || "Unknown";
+            document.getElementById('statusBadge').style.color = data.color;
+            document.getElementById('statusBadge').style.borderColor = data.color;
+
+            // Update Attribution Bars
+            document.getElementById('barWork').style.width = `${(data.contributions.workImpact / 35) * 100}%`;
+            document.getElementById('valWork').innerText = `${Math.round(data.contributions.workImpact)}%`;
+            document.getElementById('barSwitch').style.width = `${(data.contributions.switchImpact / 40) * 100}%`;
+            document.getElementById('valSwitch').innerText = `${Math.round(data.contributions.switchImpact)}%`;
+            document.getElementById('barRecov').style.width = `${(data.contributions.recoveryImpact / 25) * 100}%`;
+            document.getElementById('valRecov').innerText = `${Math.round(data.contributions.recoveryImpact)}%`;
+
+            document.getElementById('insightText').innerText = `Your primary stress driver is ${data.explanation}. The AI suggests a ${data.score > 60 ? 'immediate break' : 'stable continuation'} based on neural load.`;
+
+            loadHistory();
+            loadWeeklyPulse();
+        }
+
+        async function loadWeeklyPulse() {
+            const res = await fetch(`${API}/analytics/weekly`);
+            const data = await res.json();
+            const container = document.getElementById('weeklyPulse');
+
+            if (data.length === 0) {
+                container.innerHTML = `<p class="text-[10px] text-slate-600 uppercase font-black w-full text-center pb-8">No resonance data yet</p>`;
+                return;
+            }
+
+            container.innerHTML = data.map(day => {
+                const score = Math.round(day.avg_score);
+                const color = score > 75 ? '#ef4444' : score > 50 ? '#f97316' : '#22c55e';
+                const dayName = new Date(day.day).toLocaleDateString('en-US', { weekday: 'short' });
+                
+                return `
+                    <div class="flex-1 flex flex-col items-center gap-3 h-full group">
+                        <div class="w-full bg-white/5 rounded-t-xl flex-1 relative overflow-hidden">
+                            <div class="absolute bottom-0 w-full animate-grow" 
+                                 style="--target-height: ${score}%; background: ${color}; color: ${color}; box-shadow: 0 0 15px currentColor;">
+                            </div>
+                        </div>
+                        <span class="text-[8px] font-black text-slate-600 uppercase group-hover:text-slate-300 transition-colors">${dayName}</span>
+                    </div>`;
+            }).join('');
+        }
+
+        async function loadHistory() {
+            const res = await fetch(`${API}/history`);
+            const logs = await res.json();
+            document.getElementById('historyList').innerHTML = logs.map(log => `
+                <div class="flex items-center justify-between p-5 glass rounded-[2rem] border-white/5 hover:bg-slate-800/40 transition-all">
+                    <div class="flex items-center gap-4">
+                        <span class="text-xl">${log.face || "😊"}</span>
+                        <div>
+                            <p class="text-[9px] font-black text-slate-500 uppercase">${log.local_time}</p>
+                            <p class="text-xs font-bold">${log.explanation || "Balanced"}</p>
+                        </div>
+                    </div>
+                    <div class="text-lg font-black" style="color: ${log.color}">${log.score}%</div>
+                </div>`).join('');
+        }
+
+        window.onload = () => { loadHistory(); loadWeeklyPulse(); };
+    </script>
+</body>
+</html>
